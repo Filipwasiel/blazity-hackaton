@@ -29,43 +29,15 @@ export async function POST(req: NextRequest) {
   const content = typeof raw.content === "string" ? raw.content : "";
   const idea = typeof raw.idea === "string" ? raw.idea : "";
 
-  if (!process.env.FAL_KEY) {
-    return NextResponse.json(
-      { error: "FAL_KEY is not set. Add it to .env.local — see .env.example." },
-      { status: 500 },
-    );
-  }
-
   const prompt = buildImagePrompt(format, content, idea);
 
   try {
-    const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
-      method: "POST",
-      headers: {
-        Authorization: `Key ${process.env.FAL_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-        image_size: "square_hd",
-        num_inference_steps: 4,
-        num_images: 1,
-        enable_safety_checker: true,
-      }),
-    });
+    // Używamy darmowego API Pollinations, które nie wymaga klucza
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${seed}`;
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`fal.ai error: ${err}`);
-    }
-
-    const data = (await res.json()) as {
-      images: Array<{ url: string; content_type: string }>;
-    };
-    const url = data.images?.[0]?.url;
-    if (!url) throw new Error("No image returned from fal.ai.");
-
-    return NextResponse.json({ imageUrl: url });
+    // Zwracamy po prostu skonstruowany URL (Pollinations wygeneruje obraz w locie, gdy przeglądarka spróbuje go pobrać)
+    return NextResponse.json({ imageUrl });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Image generation failed.";
     return NextResponse.json({ error: msg }, { status: 502 });
