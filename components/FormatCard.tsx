@@ -7,9 +7,21 @@ interface FormatCardProps {
   meta: FormatMeta;
   value: string;
   onChange: (value: string) => void;
+  imageUrl?: string;
+  isGeneratingImage?: boolean;
+  onGenerateImage?: () => void;
+  onPreview?: () => void;
 }
 
-export default function FormatCard({ meta, value, onChange }: FormatCardProps) {
+export default function FormatCard({
+  meta,
+  value,
+  onChange,
+  imageUrl,
+  isGeneratingImage,
+  onGenerateImage,
+  onPreview,
+}: FormatCardProps) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -35,19 +47,42 @@ export default function FormatCard({ meta, value, onChange }: FormatCardProps) {
             <div className="hint">{meta.hint}</div>
           </div>
         </div>
-        <button
-          type="button"
-          className={copied ? "copy copied" : "copy"}
-          onClick={copy}
-        >
-          {copied ? "✓ Copied" : "Copy"}
-        </button>
+        <div className="card-actions">
+          {onPreview && (
+            <button type="button" className="copy" onClick={onPreview}>
+              Preview
+            </button>
+          )}
+          <button
+            type="button"
+            className={copied ? "copy copied" : "copy"}
+            onClick={copy}
+          >
+            {copied ? "✓ Copied" : "Copy"}
+          </button>
+        </div>
       </div>
+
       <textarea
         value={value}
         spellCheck={false}
         onChange={(e) => onChange(e.target.value)}
       />
+
+      {imageUrl ? (
+        <div className="card-image">
+          <img src={imageUrl} alt={`Generated image for ${meta.label}`} />
+        </div>
+      ) : onGenerateImage ? (
+        <button
+          type="button"
+          className="card-gen-image"
+          onClick={onGenerateImage}
+          disabled={isGeneratingImage}
+        >
+          {isGeneratingImage ? "Generating image…" : "+ Generate image"}
+        </button>
+      ) : null}
     </div>
   );
 }

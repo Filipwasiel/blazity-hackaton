@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runTeam } from "@/lib/agents";
-import { BrandKit, isTone, Tone } from "@/lib/types";
+import { AgentInstructions, BrandKit, isTone, Tone } from "@/lib/types";
 
 // The Anthropic SDK needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -13,11 +13,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const raw = body as { idea?: unknown; tone?: unknown; brandKit?: BrandKit };
+  const raw = body as {
+    idea?: unknown;
+    tone?: unknown;
+    brandKit?: BrandKit;
+    agentInstructions?: AgentInstructions;
+  };
   const idea = typeof raw.idea === "string" ? raw.idea.trim() : "";
   const tone: Tone = isTone(raw.tone) ? raw.tone : "Professional";
   const brandKit =
     raw.brandKit && typeof raw.brandKit === "object" ? raw.brandKit : undefined;
+  const agentInstructions =
+    raw.agentInstructions && typeof raw.agentInstructions === "object"
+      ? raw.agentInstructions
+      : undefined;
 
   if (!idea) {
     return NextResponse.json({ error: "Please enter an idea." }, { status: 400 });
@@ -34,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Three specialist agents run in parallel; the lead reviews and finalizes.
-    const formats = await runTeam(idea, tone, brandKit);
+    const formats = await runTeam(idea, tone, brandKit, agentInstructions);
     return NextResponse.json({ formats });
   } catch (err) {
     const messageText =

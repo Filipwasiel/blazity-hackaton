@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { BrandKit, Formats, Tone } from "./types";
+import { AgentInstructions, BrandKit, Formats, Tone } from "./types";
 import { GENERATION_SCHEMA } from "./prompt";
 
 // One client per server process; reads ANTHROPIC_API_KEY from the environment.
@@ -49,6 +49,11 @@ const ART_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+function withInstructions(system: string, extra?: string): string {
+  if (!extra?.trim()) return system;
+  return `${system}\n\nAdditional instructions:\n${extra.trim()}`;
+}
+
 function brandContext(tone: Tone, brand?: BrandKit): string {
   const lines = [`Tone: ${tone}.`];
   if (brand?.voice) lines.push(`Brand voice: ${brand.voice}`);
@@ -92,61 +97,71 @@ async function runAgent<T>(params: {
 }
 
 // 1. Copywriter — long / professional editions.
-function runCopywriter(idea: string, ctx: string) {
+function runCopywriter(idea: string, ctx: string, extra?: string) {
   return runAgent<Pick<Formats, "linkedin" | "newsletter" | "articleOutline">>({
     model: MODELS.copywriter,
     maxTokens: 2200,
     schema: COPYWRITER_SCHEMA,
-    system: `You are a senior copywriter on a content team, handling the longer, professional pieces. Write engaging, substantive copy with logical structure. Match this brand context exactly:
+    system: withInstructions(
+      `You are a senior copywriter on a content team, handling the longer, professional pieces. Write engaging, substantive copy with logical structure. Match this brand context exactly:
 ${ctx}
 
 Produce three fields:
 - linkedin: a LinkedIn post, 3–5 short paragraphs separated by blank lines, ending with one open question. Plain text, no markdown symbols.
 - newsletter: a warm newsletter opening of 100–150 words that draws the reader in and sets up the send. Plain text.
 - articleOutline: an outline as plain text — one line prefixed "Title: ", then 4–6 lines each prefixed "Section: " followed by a one-sentence description on the same line. No markdown symbols (#, *).`,
+      extra,
+    ),
     user: `Idea:\n${idea}`,
   });
 }
 
 // 2. Social Media Manager — short / dynamic editions.
-function runSocial(idea: string, ctx: string) {
+function runSocial(idea: string, ctx: string, extra?: string) {
   return runAgent<Pick<Formats, "tweet" | "videoScript">>({
     model: MODELS.social,
     maxTokens: 1200,
     schema: SOCIAL_SCHEMA,
-    system: `You are a social media manager handling short, dynamic content. Lead with strong hooks, keep language punchy, and respect character limits and script structure. Match this brand context exactly:
+    system: withInstructions(
+      `You are a social media manager handling short, dynamic content. Lead with strong hooks, keep language punchy, and respect character limits and script structure. Match this brand context exactly:
 ${ctx}
 
 Produce two fields:
 - tweet: a single tweet under 280 characters with a strong hook. Plain text. Hashtags only if they add value.
 - videoScript: a short-form script (Reels/Shorts/TikTok) with three labeled beats, each on its own line(s): "Hook (5s): ...", "Body (30–45s): ...", "CTA (5s): ...". Plain text.`,
+      extra,
+    ),
     user: `Idea:\n${idea}`,
   });
 }
 
 // 3. Art Director — visual prompt engineer.
-function runArtDirector(idea: string, ctx: string) {
+function runArtDirector(idea: string, ctx: string, extra?: string) {
   return runAgent<Pick<Formats, "imagePrompt">>({
     model: MODELS.art,
     maxTokens: 800,
     schema: ART_SCHEMA,
-    system: `You are an art director and prompt engineer. Turn the idea and any brand colors/reference style into one professional, detailed image-generation prompt for Midjourney or DALL·E, with clear subject, mood, style, lighting, and composition. Match this brand context exactly:
+    system: withInstructions(
+      `You are an art director and prompt engineer. Turn the idea and any brand colors/reference style into one professional, detailed image-generation prompt for Midjourney or DALL·E, with clear subject, mood, style, lighting, and composition. Match this brand context exactly:
 ${ctx}
 
 Produce one field:
 - imagePrompt: a single descriptive paragraph, plain text. If brand colors are given, weave them in.`,
+      extra,
+    ),
     user: `Idea:\n${idea}`,
   });
 }
 
 // 4. Editor-in-Chief (Lead) — verify, unify voice, format final JSON.
-function runEditorInChief(idea: string, ctx: string, drafts: Formats) {
+function runEditorInChief(idea: string, ctx: string, drafts: Formats, extra?: string) {
   return runAgent<Formats>({
     model: MODELS.lead,
     maxTokens: 4000,
     schema: GENERATION_SCHEMA,
     effort: "low",
-    system: `You are the Editor-in-Chief of a content team. Three specialists drafted the pieces below. Your job:
+    system: withInstructions(
+      `You are the Editor-in-Chief of a content team. Three specialists drafted the pieces below. Your job:
 - Verify every piece against the original idea and the brand context.
 - Unify the voice so all six read as one author — fix tonal drift, repetition, and any "written by different people" feel.
 - Enforce constraints: tweet under 280 characters; LinkedIn ends with a question; newsletter 100–150 words; outline has Title + 4–6 Sections; video script keeps Hook/Body/CTA; image prompt stays one descriptive paragraph.
@@ -155,6 +170,8 @@ Brand context:
 ${ctx}
 
 Return the final, polished set as the six output fields. Clean plain text, ready to copy.`,
+      extra,
+    ),
     user: `Original idea:\n${idea}\n\nDraft pieces from the team (JSON):\n${JSON.stringify(drafts, null, 2)}`,
   });
 }
@@ -164,13 +181,14 @@ export async function runTeam(
   idea: string,
   tone: Tone,
   brand?: BrandKit,
+  agentInstructions?: AgentInstructions,
 ): Promise<Formats> {
   const ctx = brandContext(tone, brand);
 
   const [copy, social, art] = await Promise.all([
-    runCopywriter(idea, ctx),
-    runSocial(idea, ctx),
-    runArtDirector(idea, ctx),
+    runCopywriter(idea, ctx, agentInstructions?.copywriter),
+    runSocial(idea, ctx, agentInstructions?.social),
+    runArtDirector(idea, ctx, agentInstructions?.art),
   ]);
 
   const drafts: Formats = {
@@ -182,5 +200,5 @@ export async function runTeam(
     imagePrompt: art.imagePrompt,
   };
 
-  return runEditorInChief(idea, ctx, drafts);
+  return runEditorInChief(idea, ctx, drafts, agentInstructions?.lead);
 }

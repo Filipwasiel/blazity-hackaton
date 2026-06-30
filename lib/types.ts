@@ -29,6 +29,9 @@ export interface BrandKit {
   referenceImage?: string;
 }
 
+export type AgentRole = "copywriter" | "social" | "art" | "lead";
+export type AgentInstructions = Partial<Record<AgentRole, string>>;
+
 export interface HistoryItem {
   id: string;
   idea: string;

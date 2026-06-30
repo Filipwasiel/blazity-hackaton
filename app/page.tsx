@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import FormatCard from "@/components/FormatCard";
 import BrandWizard from "@/components/BrandWizard";
+import AgentInstructionsPanel from "@/components/AgentInstructionsPanel";
+import PostPreviewModal from "@/components/PostPreviewModal";
 import { FORMAT_META } from "@/lib/formats";
 import { addHistory, clearHistory, loadHistory } from "@/lib/history";
 import { loadBrandKit, saveBrandKit } from "@/lib/brand";
+import { loadAgentInstructions, saveAgentInstructions } from "@/lib/agentInstructions";
 import {
   isFSAPISupported,
   pickFolder,
@@ -13,6 +16,7 @@ import {
   saveProjectToFolder,
 } from "@/lib/folder";
 import {
+  AgentInstructions,
   BrandKit,
   FormatKey,
   Formats,
@@ -32,6 +36,11 @@ export default function Page() {
 
   // Brand & folder state
   const [brandKit, setBrandKit] = useState<BrandKit>({});
+  const [agentInstructions, setAgentInstructions] = useState<AgentInstructions>({});
+  const [fsSupported, setFsSupported] = useState(false);
+  const [images, setImages] = useState<Partial<Record<FormatKey, string>>>({});
+  const [generatingImageKey, setGeneratingImageKey] = useState<FormatKey | null>(null);
+  const [previewKey, setPreviewKey] = useState<FormatKey | null>(null);
   const [folderHandle, setFolderHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [folderName, setFolderName] = useState<string | null>(null);
   const [folderError, setFolderError] = useState<string | null>(null);
@@ -40,7 +49,14 @@ export default function Page() {
   useEffect(() => {
     setHistory(loadHistory());
     setBrandKit(loadBrandKit());
+    setAgentInstructions(loadAgentInstructions());
+    setFsSupported(isFSAPISupported());
   }, []);
+
+  function handleSaveAgentInstructions(instructions: AgentInstructions) {
+    setAgentInstructions(instructions);
+    saveAgentInstructions(instructions);
+  }
 
   function handleSaveBrand(kit: BrandKit) {
     setBrandKit(kit);
@@ -69,6 +85,7 @@ export default function Page() {
     setLoading(true);
     setError(null);
     setReuseNotice(null);
+    setImages({});
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -77,6 +94,10 @@ export default function Page() {
           idea: trimmed,
           tone,
           brandKit: hasBrandContent(brandKit) ? brandKit : undefined,
+          agentInstructions:
+            Object.values(agentInstructions).some((v) => v?.trim())
+              ? agentInstructions
+              : undefined,
         }),
       });
       const data = (await res.json()) as { formats?: Formats; error?: string };
@@ -103,6 +124,29 @@ export default function Page() {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function generateImage(key: FormatKey) {
+    if (!formats) return;
+    setGeneratingImageKey(key);
+    try {
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: key,
+          content: formats[key],
+          idea: idea.trim(),
+        }),
+      });
+      const data = (await res.json()) as { imageUrl?: string; error?: string };
+      if (!res.ok || !data.imageUrl) throw new Error(data.error ?? "Image generation failed.");
+      setImages((prev) => ({ ...prev, [key]: data.imageUrl! }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image generation failed.");
+    } finally {
+      setGeneratingImageKey(null);
     }
   }
 
@@ -194,7 +238,12 @@ export default function Page() {
           folderName={folderName}
           folderError={folderError}
           onConnectFolder={connectFolder}
-          isFSAPISupported={isFSAPISupported()}
+          isFSAPISupported={fsSupported}
+        />
+
+        <AgentInstructionsPanel
+          instructions={agentInstructions}
+          onSave={handleSaveAgentInstructions}
         />
       </section>
 
@@ -220,9 +269,25 @@ export default function Page() {
               meta={meta}
               value={formats[meta.key]}
               onChange={(value) => updateFormat(meta.key, value)}
+              imageUrl={images[meta.key]}
+              isGeneratingImage={generatingImageKey === meta.key}
+              onGenerateImage={() => generateImage(meta.key)}
+              onPreview={() => setPreviewKey(meta.key)}
             />
           ))}
         </section>
+      )}
+
+      {previewKey && formats && (
+        <PostPreviewModal
+          formats={formats}
+          activeKey={previewKey}
+          images={images}
+          onClose={() => setPreviewKey(null)}
+          onSwitchFormat={setPreviewKey}
+          onGenerateImage={generateImage}
+          generatingImageKey={generatingImageKey}
+        />
       )}
 
       <section className="history">
