@@ -134,10 +134,16 @@ export default function Page() {
   return (
     <main className="wrap">
       <header className="app-header">
-        <h1>One Idea, Every Format</h1>
+        <div className="brand-badge">
+          <span className="brand-badge-dot" />
+          by Blazity
+        </div>
+        <h1>
+          <span className="gradient-text">One Idea,</span> Every Format
+        </h1>
         <p>
-          Turn a single idea into a tweet, LinkedIn post, newsletter, article
-          outline, video script, and image prompt.
+          Turn a single idea into six platform-ready pieces — tweet, LinkedIn
+          post, newsletter, article outline, video script, and image prompt.
         </p>
       </header>
 

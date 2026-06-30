@@ -23,18 +23,24 @@ export default function FormatCard({ meta, value, onChange }: FormatCardProps) {
   }
 
   return (
-    <div className="card">
+    <div
+      className="card"
+      style={{ "--card-accent": meta.color } as React.CSSProperties}
+    >
       <div className="card-head">
-        <div className="meta">
-          <h3>{meta.label}</h3>
-          <div className="hint">{meta.hint}</div>
+        <div className="card-identity">
+          <div className="card-icon">{meta.icon}</div>
+          <div className="meta">
+            <h3>{meta.label}</h3>
+            <div className="hint">{meta.hint}</div>
+          </div>
         </div>
         <button
           type="button"
           className={copied ? "copy copied" : "copy"}
           onClick={copy}
         >
-          {copied ? "Copied" : "Copy"}
+          {copied ? "✓ Copied" : "Copy"}
         </button>
       </div>
       <textarea

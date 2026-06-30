@@ -1,23 +1,46 @@
+/* ─── Design Tokens ──────────────────────────────────────────────────── */
 :root {
-  --bg: #0f1115;
-  --panel: #171a21;
-  --panel-2: #1e222b;
-  --border: #2a2f3a;
-  --text: #e8eaed;
-  --muted: #9aa3b2;
-  --accent: #6ea8fe;
-  --accent-strong: #4d8bff;
-  --danger: #ff6b6b;
-  --ok: #46d39a;
+  /* Backgrounds */
+  --bg: #07080c;
+  --surface: #0b0d12;
+  --panel: #10131a;
+  --panel-2: #161922;
+  --panel-3: #1c2030;
+
+  /* Borders */
+  --border: #212636;
+  --border-subtle: #181c29;
+  --border-focus: rgba(124, 106, 247, 0.6);
+
+  /* Text */
+  --text: #eceef4;
+  --text-secondary: #8893aa;
+  --text-muted: #454e65;
+
+  /* Brand */
+  --brand-1: #7c6af7;
+  --brand-2: #4f7bff;
+  --brand-gradient: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
+  --brand-glow: 0 4px 20px rgba(124, 106, 247, 0.35);
+
+  /* Semantic */
+  --danger: #f43f5e;
+  --ok: #10b981;
+  --warning: #f59e0b;
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
   --radius: 12px;
+  --radius-lg: 16px;
 }
 
-* {
+/* ─── Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
 }
@@ -25,78 +48,141 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  line-height: 1.5;
+  font-family: inherit; /* Inter loaded via next/font */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── Layout ─────────────────────────────────────────────────────────── */
 .wrap {
-  max-width: 980px;
+  max-width: 1020px;
   margin: 0 auto;
-  padding: 40px 20px 80px;
+  padding: 52px 24px 100px;
 }
 
+/* ─── Header ─────────────────────────────────────────────────────────── */
 header.app-header {
-  margin-bottom: 28px;
+  margin-bottom: 40px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 4px 12px 4px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
+}
+
+.brand-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  flex-shrink: 0;
 }
 
 header.app-header h1 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  font-size: clamp(30px, 4.5vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 header.app-header p {
   margin: 0;
-  color: var(--muted);
+  color: var(--text-secondary);
+  font-size: 15px;
+  max-width: 500px;
+  line-height: 1.65;
 }
 
+/* ─── Panel ──────────────────────────────────────────────────────────── */
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(124, 106, 247, 0.04) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* ─── Field label ────────────────────────────────────────────────────── */
 label.field-label {
   display: block;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
+/* ─── Idea textarea ──────────────────────────────────────────────────── */
 textarea.idea-input {
   width: 100%;
-  min-height: 90px;
+  min-height: 96px;
   resize: vertical;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
   font-size: 15px;
   font-family: inherit;
+  line-height: 1.65;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea.idea-input::placeholder {
+  color: var(--text-muted);
 }
 
 textarea.idea-input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--brand-1);
+  box-shadow: 0 0 0 3px rgba(124, 106, 247, 0.12);
 }
 
+/* ─── Controls row ───────────────────────────────────────────────────── */
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   margin-top: 14px;
 }
 
+/* ─── Tone selector ──────────────────────────────────────────────────── */
 .tones {
   display: inline-flex;
-  gap: 6px;
-  background: var(--panel-2);
+  gap: 3px;
+  background: var(--surface);
   padding: 4px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -105,45 +191,76 @@ textarea.idea-input:focus {
 .tones button {
   border: 0;
   background: transparent;
-  color: var(--muted);
-  padding: 7px 14px;
+  color: var(--text-secondary);
+  padding: 7px 16px;
   border-radius: 7px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tones button:hover:not([aria-pressed="true"]) {
+  color: var(--text);
+  background: var(--panel-3);
 }
 
 .tones button[aria-pressed="true"] {
-  background: var(--accent-strong);
-  color: white;
+  background: var(--brand-gradient);
+  color: #fff;
+  box-shadow: 0 1px 8px rgba(124, 106, 247, 0.45);
 }
 
+/* ─── Primary button ─────────────────────────────────────────────────── */
 button.primary {
   border: 0;
-  background: var(--accent-strong);
-  color: white;
-  font-size: 15px;
+  background: var(--brand-gradient);
+  color: #fff;
+  font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
   padding: 11px 22px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  letter-spacing: 0.01em;
+  box-shadow: var(--brand-glow);
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+button.primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(124, 106, 247, 0.45);
+}
+
+button.primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button.primary:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: default;
+  box-shadow: none;
 }
 
+/* ─── Error ──────────────────────────────────────────────────────────── */
 .error {
   margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(244, 63, 94, 0.07);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: var(--radius-sm);
   color: var(--danger);
   font-size: 14px;
 }
 
+/* ─── Format grid ────────────────────────────────────────────────────── */
 .grid {
-  margin-top: 26px;
+  margin-top: 28px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 @media (max-width: 720px) {
@@ -152,94 +269,151 @@ button.primary:disabled {
   }
 }
 
+/* ─── Format card ────────────────────────────────────────────────────── */
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--card-accent, var(--brand-1));
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 0 0 1px var(--card-accent, var(--brand-1)), 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .card-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 8px;
 }
 
-.card-head .meta {
+.card-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  color: var(--card-accent, var(--brand-1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.card .meta {
   min-width: 0;
 }
 
 .card-head h3 {
-  margin: 0;
-  font-size: 15px;
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .card-head .hint {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .card textarea {
   width: 100%;
   flex: 1;
-  min-height: 150px;
+  min-height: 140px;
   resize: vertical;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-family: inherit;
+  line-height: 1.65;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .card textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--card-accent, var(--brand-1));
+  box-shadow: 0 0 0 2px rgba(124, 106, 247, 0.1);
 }
 
+/* ─── Copy button ────────────────────────────────────────────────────── */
 button.copy {
   border: 1px solid var(--border);
   background: var(--panel-2);
-  color: var(--text);
-  font-size: 13px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 5px 11px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+button.copy:hover {
+  border-color: var(--text-secondary);
+  color: var(--text);
 }
 
 button.copy.copied {
   border-color: var(--ok);
   color: var(--ok);
+  background: rgba(16, 185, 129, 0.07);
 }
 
+/* ─── History ────────────────────────────────────────────────────────── */
 .history {
-  margin-top: 34px;
+  margin-top: 44px;
 }
 
 .history-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .history-head h2 {
-  font-size: 16px;
+  font-size: 11px;
+  font-weight: 700;
   margin: 0;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 button.link {
   border: 0;
   background: transparent;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+button.link:hover {
+  color: var(--danger);
 }
 
 ul.history-list {
@@ -248,7 +422,7 @@ ul.history-list {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 ul.history-list li button {
@@ -256,34 +430,70 @@ ul.history-list li button {
   text-align: left;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
   color: var(--text);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 ul.history-list li button:hover {
-  border-color: var(--accent);
+  border-color: var(--brand-1);
+  background: var(--panel-2);
 }
 
 ul.history-list .idea-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+ul.history-list li button:hover .idea-text {
+  color: var(--text);
 }
 
 ul.history-list .tag {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 2px 9px;
   white-space: nowrap;
 }
 
 .empty {
-  color: var(--muted);
-  font-size: 14px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  padding: 12px 0;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 /* ── Brand Wizard ─────────────────────────────────────── */
