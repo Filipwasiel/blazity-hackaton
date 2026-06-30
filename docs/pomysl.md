@@ -93,3 +93,20 @@ Make the model a single env/config constant so it can be switched in one place.
 - Glue (history reload/regenerate, copy-all), and Vercel deployment + env setup.
 
 **Shared first step:** agree the `Project`/`BrandKit` TypeScript types up front (Person B's schema ↔ Person C's localStorage shape ↔ Person A's props) so the three streams integrate cleanly.
+
+
+### agents imitating team
+Content generation should be divided into seperate agents each agent is responsible for their own task, lead will check the content and format it to the final output.
+1. Agent Copywriter (Wydania Długie/Profesjonalne)
+Obsługiwane formaty: LinkedIn Post, Newsletter Intro, Article Outline.
+Cel: Budowanie angażującej, merytorycznej treści, dbanie o logiczną strukturę konspektu i przyjazne rozpoczęcie newslettera.
+2. Agent Social Media Manager (Wydania Krótkie/Dynamiczne)
+Obsługiwane formaty: Tweet, Short Video Script (Reels/TikTok).
+Cel: Chwytliwe haki (hooks), dynamiczny język, zmieszczenie się w limitach znaków, zachowanie struktury scenopisu (Hook, Body, CTA).
+3. Agent Art Director (Wizualny Prompt Engineer)
+Obsługiwane formaty: Image Prompt.
+Cel: Przekształcenie idei i kolorów marki w profesjonalny, szczegółowy prompt malarski/fotograficzny dla Midjourney/DALL-E, z zachowaniem stylu i kompozycji.
+4. Lead Agent: Editor-in-Chief (Edytor Naczelny / QA)
+Rola: Łącznik i instancja weryfikacyjna.
+Cel: Pobiera teksty od 3 specjalistów, porównuje z oryginalnym pomysłem, wybranym tonem (Professional/Casual/Bold) oraz Brand Kit (voice, audience, colors) i ujednolica styl, aby nie było czuć, że pisały to różne "osoby". Na koniec formatuje dane do finalnego schematu JSON.
+Optimise this process, use less ccostly agents for easier tasks, only lead should be higher paid mode.

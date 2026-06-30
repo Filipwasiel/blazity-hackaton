@@ -14,6 +14,14 @@ export type FormatKey = (typeof FORMAT_KEYS)[number];
 
 export type Formats = Record<FormatKey, string>;
 
+// Optional brand context reused across generations (Feature 7 / Brand Memory).
+export interface BrandKit {
+  voice?: string;
+  audience?: string;
+  colors?: string[];
+  referenceImage?: string;
+}
+
 export interface BrandKit {
   brandVoice?: string;
   audience?: string;

@@ -46,11 +46,23 @@ separate backend service.
 - `.agents/`, `.claude/`, `.cursor/` — generated agent surfaces (their `skills`
   entries are NTFS junctions to `.ai/skills` on this Windows checkout).
 
-## Generation contract
+## Generation contract — agent team
 
-The route sends a single `messages.create` call to Claude with
-`output_config.format` set to `GENERATION_SCHEMA` (`lib/prompt.ts`) — an object
-with the six string fields. The first text block of the response is guaranteed
-JSON matching that schema, parsed straight into `Formats`. Tone is injected into
-the system prompt, not the schema. Default model `claude-sonnet-4-6`, overridable
-via `CLAUDE_MODEL`.
+Generation is a multi-agent pipeline (`lib/agents.ts`, `runTeam`), modeled as a
+content team with a lead reviewer. Cost is tiered: specialists run on cheap
+models, only the lead runs on the strong model.
+
+1. Three **specialist agents run in parallel** (`Promise.all`), each with its own
+   sub-schema (`output_config.format`):
+   - **Copywriter** (`claude-sonnet-4-6`) → linkedin, newsletter, articleOutline
+   - **Social Media Manager** (`claude-haiku-4-5`) → tweet, videoScript
+   - **Art Director** (`claude-haiku-4-5`) → imagePrompt
+2. The **Editor-in-Chief / lead** (`claude-opus-4-8`, `effort: "low"`) receives
+   the assembled drafts plus the idea, tone, and brand context. It verifies
+   against the idea, unifies the voice, enforces constraints (tweet < 280, etc.),
+   and returns the final six-field JSON (`GENERATION_SCHEMA`, `lib/prompt.ts`).
+
+Each model is a config constant overridable via env (`MODEL_COPYWRITER`,
+`MODEL_SOCIAL`, `MODEL_ART`, `MODEL_LEAD`). Tone and the optional `brandKit`
+(voice / audience / colors / reference image — Feature 7) are injected into the
+prompts, not the schema. Haiku rejects `effort`, so it is set only on the lead.
