@@ -71,6 +71,8 @@ desktop.ini
 tmp/
 temp/
 
+settings.json
+
 # ─────────────────────────────────────────────
 # NOTE: do NOT ignore the Atlas workspace.
 # The .ai/ folder, AGENTS.md and CLAUDE.md are
