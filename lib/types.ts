@@ -1,0 +1,27 @@
+export const TONES = ["Professional", "Casual", "Bold"] as const;
+export type Tone = (typeof TONES)[number];
+
+// Keys are the canonical "six formats". Order here is the display order.
+export const FORMAT_KEYS = [
+  "tweet",
+  "linkedin",
+  "newsletter",
+  "articleOutline",
+  "videoScript",
+  "imagePrompt",
+] as const;
+export type FormatKey = (typeof FORMAT_KEYS)[number];
+
+export type Formats = Record<FormatKey, string>;
+
+export interface HistoryItem {
+  id: string;
+  idea: string;
+  tone: Tone;
+  formats: Formats;
+  createdAt: number;
+}
+
+export function isTone(value: unknown): value is Tone {
+  return typeof value === "string" && (TONES as readonly string[]).includes(value);
+}
