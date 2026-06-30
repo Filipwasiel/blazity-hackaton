@@ -285,3 +285,248 @@ ul.history-list .tag {
   color: var(--muted);
   font-size: 14px;
 }
+
+/* ── Brand Wizard ─────────────────────────────────────── */
+
+.brand-wizard {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.brand-wizard-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  user-select: none;
+  list-style: none;
+}
+
+.brand-wizard-summary::-webkit-details-marker {
+  display: none;
+}
+
+.brand-wizard-summary::before {
+  content: "▸";
+  font-size: 11px;
+  transition: transform 0.15s;
+}
+
+details[open] .brand-wizard-summary::before {
+  transform: rotate(90deg);
+}
+
+.brand-badge {
+  font-size: 11px;
+  background: var(--accent-strong);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.brand-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.brand-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.brand-field label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.brand-field input[type="text"],
+.brand-field textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.brand-field input[type="text"]:focus,
+.brand-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.color-swatch input[type="color"] {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.color-remove {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.color-remove:hover {
+  color: var(--danger);
+}
+
+.color-add {
+  font-size: 13px;
+}
+
+.brand-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.brand-actions .primary {
+  font-size: 14px;
+  padding: 9px 18px;
+}
+
+/* ── Folder section ───────────────────────────────────── */
+
+.folder-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.folder-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.folder-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ok);
+}
+
+.folder-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex-shrink: 0;
+}
+
+.folder-btn {
+  font-size: 13px;
+}
+
+.folder-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.folder-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* ── Reuse notice ─────────────────────────────────────── */
+
+.reuse-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, transparent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.reuse-notice .link {
+  color: var(--muted);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* ── History item with reuse brand button ─────────────── */
+
+ul.history-list li.history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+ul.history-list li.history-item .history-item-btn {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+ul.history-list li.history-item .history-item-btn:hover {
+  border-color: var(--accent);
+}
+
+.reuse-brand-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.reuse-brand-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+}

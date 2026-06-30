@@ -14,14 +14,31 @@ export type FormatKey = (typeof FORMAT_KEYS)[number];
 
 export type Formats = Record<FormatKey, string>;
 
+export interface BrandKit {
+  brandVoice?: string;
+  audience?: string;
+  colors?: string[];
+  referenceImage?: string;
+}
+
 export interface HistoryItem {
   id: string;
   idea: string;
   tone: Tone;
+  brandKit?: BrandKit;
   formats: Formats;
   createdAt: number;
 }
 
 export function isTone(value: unknown): value is Tone {
   return typeof value === "string" && (TONES as readonly string[]).includes(value);
+}
+
+export function hasBrandContent(kit: BrandKit): boolean {
+  return !!(
+    kit.brandVoice?.trim() ||
+    kit.audience?.trim() ||
+    (kit.colors && kit.colors.length > 0) ||
+    kit.referenceImage?.trim()
+  );
 }

@@ -2,11 +2,21 @@
 
 import { useEffect, useState } from "react";
 import FormatCard from "@/components/FormatCard";
+import BrandWizard from "@/components/BrandWizard";
 import { FORMAT_META } from "@/lib/formats";
 import { addHistory, clearHistory, loadHistory } from "@/lib/history";
+import { loadBrandKit, saveBrandKit } from "@/lib/brand";
 import {
+  isFSAPISupported,
+  pickFolder,
+  saveBrandKitToFolder,
+  saveProjectToFolder,
+} from "@/lib/folder";
+import {
+  BrandKit,
   FormatKey,
   Formats,
+  hasBrandContent,
   HistoryItem,
   Tone,
   TONES,
@@ -20,21 +30,54 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  // History only exists in the browser; load it after mount.
+  // Brand & folder state
+  const [brandKit, setBrandKit] = useState<BrandKit>({});
+  const [folderHandle, setFolderHandle] = useState<FileSystemDirectoryHandle | null>(null);
+  const [folderName, setFolderName] = useState<string | null>(null);
+  const [folderError, setFolderError] = useState<string | null>(null);
+  const [reuseNotice, setReuseNotice] = useState<string | null>(null);
+
   useEffect(() => {
     setHistory(loadHistory());
+    setBrandKit(loadBrandKit());
   }, []);
+
+  function handleSaveBrand(kit: BrandKit) {
+    setBrandKit(kit);
+    saveBrandKit(kit);
+    if (folderHandle) {
+      saveBrandKitToFolder(folderHandle, tone, kit).catch(() => {});
+    }
+  }
+
+  async function connectFolder() {
+    try {
+      const handle = await pickFolder();
+      setFolderHandle(handle);
+      setFolderName(handle.name);
+      setFolderError(null);
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        setFolderError("Could not access folder.");
+      }
+    }
+  }
 
   async function generate() {
     const trimmed = idea.trim();
     if (!trimmed || loading) return;
     setLoading(true);
     setError(null);
+    setReuseNotice(null);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: trimmed, tone }),
+        body: JSON.stringify({
+          idea: trimmed,
+          tone,
+          brandKit: hasBrandContent(brandKit) ? brandKit : undefined,
+        }),
       });
       const data = (await res.json()) as { formats?: Formats; error?: string };
       if (!res.ok || !data.formats) {
@@ -48,10 +91,14 @@ export default function Page() {
             : String(Date.now()),
         idea: trimmed,
         tone,
+        brandKit: hasBrandContent(brandKit) ? { ...brandKit } : undefined,
         formats: data.formats,
         createdAt: Date.now(),
       };
       setHistory(addHistory(item));
+      if (folderHandle) {
+        saveProjectToFolder(folderHandle, item).catch(() => {});
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -68,6 +115,20 @@ export default function Page() {
     setTone(item.tone);
     setFormats(item.formats);
     setError(null);
+    setReuseNotice(null);
+  }
+
+  function loadBrandFromItem(item: HistoryItem) {
+    if (!item.brandKit) return;
+    const kit = item.brandKit;
+    setBrandKit(kit);
+    saveBrandKit(kit);
+    setTone(item.tone);
+    if (folderHandle) {
+      saveBrandKitToFolder(folderHandle, item.tone, kit).catch(() => {});
+    }
+    const preview = item.idea.length > 55 ? item.idea.slice(0, 55) + "…" : item.idea;
+    setReuseNotice(`Brand loaded from: "${preview}"`);
   }
 
   return (
@@ -96,11 +157,7 @@ export default function Page() {
         />
 
         <div className="controls">
-          <div
-            className="tones"
-            role="group"
-            aria-label="Tone"
-          >
+          <div className="tones" role="group" aria-label="Tone">
             {TONES.map((t) => (
               <button
                 key={t}
@@ -124,7 +181,30 @@ export default function Page() {
         </div>
 
         {error && <div className="error">{error}</div>}
+
+        <BrandWizard
+          kit={brandKit}
+          onSave={handleSaveBrand}
+          folderName={folderName}
+          folderError={folderError}
+          onConnectFolder={connectFolder}
+          isFSAPISupported={isFSAPISupported()}
+        />
       </section>
+
+      {reuseNotice && (
+        <div className="reuse-notice">
+          <span>{reuseNotice}</span>
+          <button
+            type="button"
+            className="link"
+            onClick={() => setReuseNotice(null)}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {formats && (
         <section className="grid">
@@ -159,11 +239,25 @@ export default function Page() {
         ) : (
           <ul className="history-list">
             {history.map((item) => (
-              <li key={item.id}>
-                <button type="button" onClick={() => restore(item)}>
+              <li key={item.id} className="history-item">
+                <button
+                  type="button"
+                  className="history-item-btn"
+                  onClick={() => restore(item)}
+                >
                   <span className="idea-text">{item.idea}</span>
                   <span className="tag">{item.tone}</span>
                 </button>
+                {item.brandKit && (
+                  <button
+                    type="button"
+                    className="reuse-brand-btn"
+                    onClick={() => loadBrandFromItem(item)}
+                    title="Load this project's brand settings"
+                  >
+                    Use brand
+                  </button>
+                )}
               </li>
             ))}
           </ul>

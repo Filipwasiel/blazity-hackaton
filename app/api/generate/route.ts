@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { GENERATION_SCHEMA, buildSystemPrompt } from "@/lib/prompt";
-import { Formats, isTone, Tone } from "@/lib/types";
+import { BrandKit, Formats, isTone, Tone } from "@/lib/types";
 
 // The Anthropic SDK needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const raw = body as { idea?: unknown; tone?: unknown };
+  const raw = body as { idea?: unknown; tone?: unknown; brandKit?: unknown };
   const idea = typeof raw.idea === "string" ? raw.idea.trim() : "";
   const tone: Tone = isTone(raw.tone) ? raw.tone : "Professional";
+  const brandKit = raw.brandKit as BrandKit | undefined;
 
   if (!idea) {
     return NextResponse.json({ error: "Please enter an idea." }, { status: 400 });
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     const message = await client.messages.create({
       model: MODEL,
       max_tokens: 4000,
-      system: buildSystemPrompt(tone),
+      system: buildSystemPrompt(tone, brandKit),
       messages: [{ role: "user", content: idea }],
       // Structured output: the first text block is guaranteed valid JSON
       // matching GENERATION_SCHEMA.
